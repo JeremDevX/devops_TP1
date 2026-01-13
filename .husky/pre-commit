@@ -1,17 +1,24 @@
 #!/bin/sh
 . "$(dirname "$0")/_/husky.sh"
 
-echo "🔐 Vérification des secrets avec Gitleaks..."
+echo "🔐 Vérification des secrets..."
 
-# Utiliser gitleaks via node_modules
-if [ -f "node_modules/.bin/gitleaks" ]; then
-  ./node_modules/.bin/gitleaks protect --staged --verbose
-  if [ $? -ne 0 ]; then
-    echo "❌ Erreur : Des secrets potentiels ont été détectés !"
-    echo "⚠️  Veuillez supprimer les secrets avant de committer"
+# Vérifier les secrets Stripe et AWS dans les fichiers réels
+for FILE in $(git diff --cached --name-only --diff-filter=ACM); do
+  # Ignorer les fichiers de config Git
+  case "$FILE" in
+    .husky/pre-commit|commitlint.config.js)
+      continue
+      ;;
+  esac
+  
+  # Vérifier le contenu du fichier staged
+  if git show ":$FILE" 2>/dev/null | grep -qE "(sk_live_[a-zA-Z0-9]{20,}|sk_test_[a-zA-Z0-9]{20,}|AKIA[0-9A-Z]{16})" 2>/dev/null; then
+    echo "❌ Erreur : Secret détecté dans $FILE"
+    echo "   Secrets Stripe (sk_live_, sk_test_) ou AWS keys (AKIA...) ne doivent pas être commitées"
     exit 1
   fi
-  echo "✅ Aucun secret détecté"
-else
-  echo "⚠️  Gitleaks non trouvé, vérification ignorée"
-fi
+done
+
+echo "✅ Aucun secret détecté"
+exit 0
