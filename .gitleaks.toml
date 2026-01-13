@@ -1,0 +1,21 @@
+title = "Gitleaks config"
+
+[[rules]]
+id = "gitleaks-detect-secrets"
+description = "Detect hardcoded secrets and credentials"
+regex = '''(?i)(password|secret|token|api[_-]?key|private[_-]?key|aws[_-]?secret|auth|credential)[\s]*=[\s]*['\"]?[^\s'\"]+['\"]?'''
+secretGroup = 1
+entropy = 4.5
+keywords = ["password", "secret", "token", "api_key", "private_key"]
+
+[[rules]]
+id = "gitleaks-detect-jwt"
+description = "Detect JSON Web Tokens"
+regex = '''(eyJ[A-Za-z0-9_-]+\.eyJ[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+)'''
+entropy = 4.0
+
+[[rules]]
+id = "gitleaks-detect-aws"
+description = "Detect AWS credentials"
+regex = '''(?i)(AKIA|aws_secret_access_key)[\s]*=[\s]*[^\s]+'''
+entropy = 3.5
