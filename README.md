@@ -1,6 +1,102 @@
 # Gym Management System
 
+[![CI Pipeline](https://github.com/JeremDevX/devops_TP1/actions/workflows/ci.yml/badge.svg)](https://github.com/JeremDevX/devops_TP1/actions/workflows/ci.yml)
+[![Quality Gate](https://sonarcloud.io/api/project_badges/measure?project=cloud-native-gym&metric=alert_status&token=sqb_6f6aa51c89f6e92e20dd52cf00f7fce9a63fe006)](https://sonarcloud.io/dashboard?id=cloud-native-gym)
+
 A complete fullstack gym management application built with modern web technologies.
+
+## 🔄 CI/CD Pipeline
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                     GitHub Actions (self-hosted)                │
+└─────────────────────────────────────────────────────────────────┘
+                                │
+                    ┌───────────┴───────────┐
+                    ▼                       ▼
+              ┌──────────┐           ┌──────────┐
+              │  LINT   │           │  BUILD   │
+              │Front+Back│◄──────────┤Front+Back│
+              └──────────┘           └──────────┘
+                    │                       │
+                    └───────────┬───────────┘
+                                ▼
+                          ┌──────────┐
+                          │  TESTS   │
+                          │Backend   │
+                          └──────────┘
+                                │
+                                ▼
+                        ┌───────────────┐
+                        │  SONARCLOUD   │
+                        │Quality Gate   │
+                        └───────────────┘
+```
+
+## 📋 Git Workflow
+
+### Branches
+
+- **`main`** - Production-ready code (protected)
+- **`develop`** - Integration branch (protected)
+- **`feature/*`** - Feature development (e.g., `feature/user-auth`)
+- **`bugfix/*`** - Bug fixes (e.g., `bugfix/login-issue`)
+- **`hotfix/*`** - Urgent production fixes (e.g., `hotfix/security-patch`)
+
+### Commit Convention
+
+Commits follow **Conventional Commits**:
+
+```
+<type>(<scope>): <subject>
+
+<body>
+
+<footer>
+```
+
+**Types:**
+
+- `feat`: New feature
+- `fix`: Bug fix
+- `docs`: Documentation
+- `style`: Formatting (no code change)
+- `refactor`: Code refactoring
+- `perf`: Performance improvement
+- `test`: Test addition/update
+- `chore`: Build/config changes
+
+**Example:**
+
+```
+feat(auth): add JWT token refresh endpoint
+
+- Implement refresh token mechanism
+- Add expiration validation
+- Update auth middleware
+
+Closes #123
+```
+
+### Pull Request Rules
+
+1. **Branch Protection** (main & develop)
+
+   - ✅ CI Pipeline must pass (Lint, Build, Tests, SonarCloud)
+   - ✅ Minimum 1 code review required
+   - ✅ Quality Gate must pass (SonarCloud)
+   - ❌ No direct pushes allowed
+
+2. **PR Requirements**
+
+   - Descriptive title and description
+   - Link related issues (`Closes #123`)
+   - Must be merged from feature branch
+
+3. **Merge Strategy**
+   - Use **Squash and merge** for features
+   - Use **Rebase and merge** for hotfixes
+   - Use **Create merge commit** for releases
 
 ## Features
 
