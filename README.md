@@ -223,13 +223,159 @@ docker exec -it gym_db psql -U postgres -d gym_management
 - Monthly billing with no-show penalties
 - Recent booking history
 
+## 🌿 Git Workflow & Conventions
+
+### Branch Strategy
+
+We follow a professional Git workflow with the following branch structure:
+
+- **`main`** - Production branch (stable releases only)
+- **`develop`** - Integration branch for features
+- **`feature/<nom>`** - Feature branches (created from `develop`)
+
+**Rules:**
+- ❌ Never commit directly to `main` or `develop`
+- ✅ Always create a feature branch: `git checkout -b feature/your-feature develop`
+- ✅ Create a Pull Request to merge into `develop`
+- ✅ PR must be reviewed before merging
+
+### Conventional Commits
+
+All commits must follow the **Conventional Commit** format enforced by Commitlint:
+
+```
+<type>(<scope>): <subject>
+```
+
+**Allowed types:**
+- `feat:` - New feature
+  - Example: `feat: add user authentication`
+- `fix:` - Bug fix
+  - Example: `fix: resolve database connection issue`
+- `chore:` - Maintenance tasks, dependency updates
+  - Example: `chore: update NestJS dependencies`
+- `docs:` - Documentation updates
+  - Example: `docs: update API endpoints`
+- `style:` - Code style (formatting, semicolons, etc.)
+- `refactor:` - Code refactoring without feature changes
+- `test:` - Adding or updating tests
+- `ci:` - CI/CD configuration changes
+- `build:` - Build system changes
+- `perf:` - Performance improvements
+- `revert:` - Revert a previous commit
+
+**Examples:**
+```bash
+git commit -m "feat: add class booking functionality"
+git commit -m "fix: correct Postgres connection pool size"
+git commit -m "chore: upgrade Vue.js to v3.4"
+git commit -m "docs: add deployment guide"
+```
+
+### 🔒 Git Hooks (Automated Quality Checks)
+
+This project uses **Husky** for automated Git hooks that enforce code quality:
+
+#### 1. **`pre-commit` Hook**
+- 🔐 Detects hardcoded secrets, API keys, and tokens with **Gitleaks**
+- ❌ Blocks commit if secrets are detected
+- ✅ Allows clean, secure commits only
+
+**How it works:**
+```bash
+git add .
+git commit -m "feat: new feature"
+# → Gitleaks scans files
+# → If secrets found: ❌ Commit blocked
+# → If clean: ✅ Commit allowed
+```
+
+#### 2. **`commit-msg` Hook**
+- ✅ Validates commit message format with **Commitlint**
+- ❌ Rejects commits that don't follow Conventional Commits
+- 📋 Shows helpful error messages
+
+**Invalid commits will be rejected:**
+```bash
+git commit -m "lol: just testing stuff"
+# ❌ Error: type must be one of [feat, fix, chore, etc.]
+```
+
+#### 3. **`pre-push` Hook**
+- 📦 Builds frontend and backend before pushing
+- ❌ Blocks push if build fails
+- 🛡️ Ensures only working code reaches remote repository
+
+**Before pushing to GitHub:**
+```bash
+git push origin feature/my-feature
+# → Builds frontend
+# → Builds backend (if applicable)
+# → If successful: ✅ Push allowed
+# → If failed: ❌ Push blocked
+```
+
+### 🚀 Typical Workflow
+
+```bash
+# 1. Create feature branch
+git checkout -b feature/user-profile develop
+
+# 2. Make changes and commit (hooks run automatically)
+echo "new feature code" > src/newFeature.js
+git add src/newFeature.js
+git commit -m "feat: add user profile page"
+# → pre-commit hook runs (Gitleaks checks)
+# → commit-msg hook runs (Commitlint validates message)
+# → ✅ Commit successful
+
+# 3. Push to remote (hooks run automatically)
+git push -u origin feature/user-profile
+# → pre-push hook runs (build verification)
+# → ✅ Push successful
+
+# 4. Create Pull Request on GitHub
+# → Get code review
+# → Merge into develop
+
+# 5. Later, merge develop → main for release
+git checkout main
+git merge develop
+git tag v1.0.0
+git push origin main --tags
+```
+
+### ⚠️ Emergency: Bypassing Hooks (Not Recommended)
+
+If absolutely necessary, you can skip hooks (use with caution):
+
+```bash
+git commit --no-verify  # Skips pre-commit and commit-msg hooks
+git push --no-verify   # Skips pre-push hook
+```
+
+**⚠️ WARNING:** Only use `--no-verify` in emergencies. It defeats the purpose of automated quality checks.
+
+### 🔗 Branch Protection Rules (GitHub)
+
+The `main` and `develop` branches are protected with:
+- ✅ Require pull request reviews
+- ✅ Block direct pushes
+- ✅ Require linear history
+- ✅ Require status checks (CI/CD pipelines)
+
 ## Contributing
 
+To contribute to this project:
+
 1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Add tests if applicable
-5. Submit a pull request
+2. Create a feature branch from `develop`: `git checkout -b feature/your-feature develop`
+3. Make your changes following Conventional Commits
+4. Ensure your commits pass all Git hooks
+5. Push to your branch
+6. Submit a Pull Request to `develop`
+7. Wait for code review and CI/CD checks to pass
+8. Merge only after approval
 
 ## License
 

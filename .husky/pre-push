@@ -1,0 +1,26 @@
+#!/bin/sh
+. "$(dirname "$0")/_/husky.sh"
+
+echo "🔍 Vérification du projet avant push..."
+
+# Vérifier que le frontend build correctement
+echo "📦 Building frontend..."
+cd frontend && npm run build
+if [ $? -ne 0 ]; then
+  echo "❌ Erreur : Le frontend ne compile pas"
+  exit 1
+fi
+cd ..
+
+# Vérifier que le backend compile (si script existe)
+if [ -f "backend/package.json" ] && grep -q "build" backend/package.json; then
+  echo "📦 Building backend..."
+  cd backend && npm run build
+  if [ $? -ne 0 ]; then
+    echo "❌ Erreur : Le backend ne compile pas"
+    exit 1
+  fi
+  cd ..
+fi
+
+echo "✅ Tous les contrôles sont passés. Push autorisé !"

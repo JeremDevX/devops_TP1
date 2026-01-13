@@ -1,0 +1,17 @@
+#!/bin/sh
+. "$(dirname "$0")/_/husky.sh"
+
+echo "🔐 Vérification des secrets avec Gitleaks..."
+
+# Utiliser gitleaks via node_modules
+if [ -f "node_modules/.bin/gitleaks" ]; then
+  ./node_modules/.bin/gitleaks protect --staged --verbose
+  if [ $? -ne 0 ]; then
+    echo "❌ Erreur : Des secrets potentiels ont été détectés !"
+    echo "⚠️  Veuillez supprimer les secrets avant de committer"
+    exit 1
+  fi
+  echo "✅ Aucun secret détecté"
+else
+  echo "⚠️  Gitleaks non trouvé, vérification ignorée"
+fi
