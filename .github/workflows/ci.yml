@@ -64,10 +64,6 @@ jobs:
         working-directory: ./frontend
         run: npm run build
 
-      - name: Build Backend
-        working-directory: ./backend
-        run: npm run build
-
   tests:
     name: Tests
     runs-on: self-hosted
