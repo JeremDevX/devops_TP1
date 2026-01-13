@@ -111,12 +111,14 @@ jobs:
         uses: SonarSource/sonarqube-scan-action@v6
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-        continue-on-error: true
 
-      - name: Check Quality Gate
+      - name: Wait for Quality Gate
+        uses: sonarsource/sonarqube-quality-gate-action@v1.1.0
+        timeout-minutes: 5
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        continue-on-error: false
+
+      - name: Quality Gate Status
         run: |
-          if [ -n "${{ secrets.SONAR_TOKEN }}" ]; then
-            echo "✅ SonarCloud scan completed. Check results in dashboard."
-          else
-            echo "⚠️ SONAR_TOKEN not configured. SonarCloud scan skipped."
-          fi
+          echo "✅ Quality Gate passed! Code quality meets standards."
