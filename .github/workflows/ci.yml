@@ -1,0 +1,118 @@
+name: CI Pipeline
+
+on:
+  push:
+    branches: [main, develop, feature/ci-pipeline]
+  pull_request:
+    branches: [main, develop, feature/ci-pipeline]
+
+jobs:
+  lint:
+    name: Lint
+    runs-on: self-hosted
+    strategy:
+      matrix:
+        node-version: [18.x]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: "npm"
+
+      - name: Install dependencies (Frontend)
+        working-directory: ./frontend
+        run: npm ci
+
+      - name: Install dependencies (Backend)
+        working-directory: ./backend
+        run: npm ci
+
+      - name: Lint Frontend
+        working-directory: ./frontend
+        run: npm run lint
+
+      - name: Lint Backend
+        working-directory: ./backend
+        run: npm run lint
+
+  build:
+    name: Build
+    runs-on: self-hosted
+    needs: lint
+    strategy:
+      matrix:
+        node-version: [18.x]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: "npm"
+
+      - name: Install dependencies (Frontend)
+        working-directory: ./frontend
+        run: npm ci
+
+      - name: Install dependencies (Backend)
+        working-directory: ./backend
+        run: npm ci
+
+      - name: Build Frontend
+        working-directory: ./frontend
+        run: npm run build
+
+      - name: Build Backend
+        working-directory: ./backend
+        run: npm run build
+
+  tests:
+    name: Tests
+    runs-on: self-hosted
+    needs: build
+    strategy:
+      matrix:
+        node-version: [18.x]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: "npm"
+
+      - name: Install dependencies (Backend)
+        working-directory: ./backend
+        run: npm ci
+
+      - name: Run Backend Tests
+        working-directory: ./backend
+        run: npm test
+
+  sonarcloud:
+    name: SonarCloud Scan
+    runs-on: self-hosted
+    needs: tests
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: SonarCloud Scan
+        uses: SonarSource/sonarcloud-github-action@master
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        with:
+          args: >
+            -Dsonar.projectKey=cloud-native-gym
+            -Dsonar.organization=your-org
+
+      - name: Check Quality Gate
+        run: |
+          echo "Quality Gate check completed. Please verify results in SonarCloud dashboard."
