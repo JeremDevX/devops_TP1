@@ -120,4 +120,3 @@ jobs:
           else
             echo "⚠️ SONAR_TOKEN not configured. SonarCloud scan skipped."
           fi
-          fi
