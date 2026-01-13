@@ -115,10 +115,9 @@ jobs:
 
       - name: Check Quality Gate
         run: |
-          if [ -z "${{ secrets.SONAR_TOKEN }}" ]; then
-            echo "⚠️  SONAR_TOKEN not configured. SonarCloud scan skipped."
+          if [ -n "${{ secrets.SONAR_TOKEN }}" ]; then
+            echo "✅ SonarCloud scan completed. Check results in dashboard."
           else
-            echo "✅ SonarCloud scan completed. Check results in dashboard."
+            echo "⚠️ SONAR_TOKEN not configured. SonarCloud scan skipped."
           fi
-            echo "✅ SonarCloud scan completed. Check results in dashboard."
           fi
