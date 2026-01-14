@@ -7,7 +7,7 @@ WORKDIR /app
 COPY package*.json ./
 
 # Installer toutes les dépendances (y compris devDependencies pour Prisma)
-RUN npm ci
+RUN npm install
 
 # Copier le code source et le schéma Prisma
 COPY . .
@@ -27,7 +27,7 @@ WORKDIR /app
 COPY package*.json ./
 
 # Installer uniquement les dépendances de production
-RUN npm ci --omit=dev
+RUN npm install --omit=dev
 
 # Copier le code source depuis le builder
 COPY --from=builder /app/src ./src
