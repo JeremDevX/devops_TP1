@@ -6,6 +6,10 @@ on:
   pull_request:
     branches: [main, develop, feature/ci-pipeline]
 
+permissions:
+  contents: read
+  packages: write
+
 jobs:
   lint:
     name: Lint
@@ -186,7 +190,7 @@ jobs:
 
       - name: Login to GitHub Container Registry
         run: |
-          echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+          echo ${{ secrets.GHCR_TOKEN }} | docker login ghcr.io -u ${{ github.actor }} --password-stdin
 
       - name: Tag and Push Backend Image
         run: |
