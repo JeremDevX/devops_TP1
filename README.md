@@ -3,37 +3,42 @@
 [![CI Pipeline](https://github.com/JeremDevX/devops_TP1/actions/workflows/ci.yml/badge.svg)](https://github.com/JeremDevX/devops_TP1/actions/workflows/ci.yml)
 [![Quality Gate](https://sonarcloud.io/api/project_badges/measure?project=cloud-native-gym&metric=alert_status&token=sqb_6f6aa51c89f6e92e20dd52cf00f7fce9a63fe006)](https://sonarcloud.io/dashboard?id=cloud-native-gym)
 
-A complete fullstack gym management application built with modern web technologies.
+A complete fullstack gym management application built with modern web technologies, fully containerized with Docker and integrated into a complete CI/CD pipeline.
 
-## 🔄 CI/CD Pipeline
+## 🔄 CI/CD Pipeline & Docker
+
+### Docker Images
+
+Docker images are automatically built, tested, and pushed to GitHub Container Registry (GHCR):
+
+- **Backend**: `ghcr.io/<username>/cloudnative-backend:latest`
+- **Frontend**: `ghcr.io/<username>/cloudnative-frontend:latest`
+
+Each deployment includes both `:latest` and `:commit-sha` tags.
+
+### Pipeline Execution
+
+The CI/CD pipeline runs on a **self-hosted GitHub Actions runner** and includes:
+
+1. **Lint** - Code style validation (ESLint)
+2. **Build** - Compilation of frontend and backend
+3. **Tests** - Backend test suite
+4. **Docker Build** - Container image creation
+5. **Docker Test** - Health checks and HTTP validation
+6. **Docker Push** - Registry deployment (main branch only)
+7. **SonarCloud** - Code quality analysis
+
+**Requirements:**
+
+- Self-hosted runner with Docker installed
+- GitHub secrets configured: `DOCKER_USERNAME`, `DOCKER_PASSWORD`, `SONAR_TOKEN`
+- Push to `main` branch triggers full pipeline with Docker registry push
 
 ```
-┌─────────────────────────────────────────────────────────────────┐
-│                     GitHub Actions (self-hosted)                │
-└─────────────────────────────────────────────────────────────────┘
-                                │
-                    ┌───────────┴───────────┐
-                    ▼                       ▼
-              ┌──────────┐           ┌──────────┐
-              │  LINT   │           │  BUILD   │
-              │Front+Back│◄──────────┤Front+Back│
-              └──────────┘           └──────────┘
-                    │                       │
-                    └───────────┬───────────┘
-                                ▼
-                          ┌──────────┐
-                          │  TESTS   │
-                          │Backend   │
-                          └──────────┘
-                                │
-                                ▼
-                        ┌───────────────┐
-                        │  SONARCLOUD   │
-                        │Quality Gate   │
-                        └───────────────┘
+lint → build → tests → docker-build → docker-test → docker-push → sonarcloud
 ```
 
-## 📋 Git Workflow
+## Git Workflow
 
 ### Branches
 
@@ -153,7 +158,7 @@ Closes #123
 - Docker and Docker Compose
 - Git
 
-### Installation
+### Installation & Launch
 
 1. **Clone the repository**
 
@@ -170,16 +175,25 @@ Closes #123
 
    Edit `.env` file if needed (default values should work for development).
 
-3. **Start the application**
+3. **Start the application with Docker Compose**
 
    ```bash
-   docker-compose up --build
+   docker compose up --build
    ```
 
-4. **Access the application**
-   - Frontend: http://localhost:8080
-   - Backend API: http://localhost:3000
-   - Database: localhost:5432
+   This command will:
+
+   - Build Docker images for backend and frontend
+   - Start PostgreSQL database
+   - Start backend API server
+   - Start frontend application with Nginx
+   - Run database migrations and seeding
+
+### Access the Application
+
+- **Frontend**: http://localhost:8080
+- **Backend API**: http://localhost:3000
+- **Database**: localhost:5432 (local only)
 
 ### Default Login Credentials
 

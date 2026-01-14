@@ -87,6 +87,121 @@ jobs:
         working-directory: ./backend
         run: npm test
 
+  docker-build:
+    name: Build Docker Images
+    runs-on: self-hosted
+    needs: build
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build Backend Docker Image
+        run: |
+          docker build -t backend-ci ./backend
+          echo "Backend image built successfully"
+
+      - name: Build Frontend Docker Image
+        run: |
+          docker build -t frontend-ci ./frontend
+          echo "Frontend image built successfully"
+
+      - name: List Docker Images
+        run: docker images | grep -E "backend-ci|frontend-ci"
+
+  docker-test:
+    name: Test Docker Images
+    runs-on: self-hosted
+    needs: docker-build
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Start Backend Container
+        run: |
+          docker run -d --name backend-test \
+            -e DATABASE_URL="postgresql://gymuser:gympass@postgres:5432/gymdb" \
+            -e NODE_ENV="production" \
+            -p 3000:3000 \
+            backend-ci
+          sleep 5
+
+      - name: Test Backend Health Check
+        run: |
+          HEALTH=$(curl -s http://localhost:3000/health | jq -r '.status')
+          if [ "$HEALTH" = "OK" ]; then
+            echo "✅ Backend health check passed"
+          else
+            echo "❌ Backend health check failed"
+            docker logs backend-test
+            exit 1
+          fi
+
+      - name: Cleanup Backend Container
+        if: always()
+        run: docker rm -f backend-test
+
+      - name: Start Frontend Container
+        run: |
+          docker run -d --name frontend-test \
+            -p 8080:80 \
+            frontend-ci
+          sleep 3
+
+      - name: Test Frontend HTTP Status
+        run: |
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:8080)
+          if [ "$STATUS" = "200" ]; then
+            echo "✅ Frontend HTTP 200 OK"
+          else
+            echo "❌ Frontend returned HTTP $STATUS"
+            docker logs frontend-test
+            exit 1
+          fi
+
+      - name: Cleanup Frontend Container
+        if: always()
+        run: docker rm -f frontend-test
+
+  docker-push:
+    name: Push Docker Images to Registry
+    runs-on: self-hosted
+    needs: docker-test
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build Backend Docker Image
+        run: docker build -t backend-ci ./backend
+
+      - name: Build Frontend Docker Image
+        run: docker build -t frontend-ci ./frontend
+
+      - name: Login to GitHub Container Registry
+        run: |
+          echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+
+      - name: Tag and Push Backend Image
+        run: |
+          BACKEND_IMAGE=ghcr.io/${{ github.repository_owner }}/cloudnative-backend:${{ github.sha }}
+          docker tag backend-ci $BACKEND_IMAGE
+          docker push $BACKEND_IMAGE
+          echo "Backend image pushed: $BACKEND_IMAGE"
+
+      - name: Tag and Push Frontend Image
+        run: |
+          FRONTEND_IMAGE=ghcr.io/${{ github.repository_owner }}/cloudnative-frontend:${{ github.sha }}
+          docker tag frontend-ci $FRONTEND_IMAGE
+          docker push $FRONTEND_IMAGE
+          echo "Frontend image pushed: $FRONTEND_IMAGE"
+
+      - name: Tag and Push Latest
+        run: |
+          BACKEND_LATEST=ghcr.io/${{ github.repository_owner }}/cloudnative-backend:latest
+          FRONTEND_LATEST=ghcr.io/${{ github.repository_owner }}/cloudnative-frontend:latest
+          docker tag backend-ci $BACKEND_LATEST
+          docker tag frontend-ci $FRONTEND_LATEST
+          docker push $BACKEND_LATEST
+          docker push $FRONTEND_LATEST
+          echo "Latest tags pushed"
+
   sonarcloud:
     name: SonarCloud Scan
     runs-on: self-hosted
