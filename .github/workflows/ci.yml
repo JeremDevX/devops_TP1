@@ -190,22 +190,22 @@ jobs:
 
       - name: Tag and Push Backend Image
         run: |
-          BACKEND_IMAGE=ghcr.io/${{ github.repository_owner }}/cloudnative-backend:${{ github.sha }}
+          BACKEND_IMAGE=ghcr.io/${{ github.repository_owner }}/cloudnativebackend:${{ github.sha }}
           docker tag backend-ci $BACKEND_IMAGE
           docker push $BACKEND_IMAGE
           echo "Backend image pushed: $BACKEND_IMAGE"
 
       - name: Tag and Push Frontend Image
         run: |
-          FRONTEND_IMAGE=ghcr.io/${{ github.repository_owner }}/cloudnative-frontend:${{ github.sha }}
+          FRONTEND_IMAGE=ghcr.io/${{ github.repository_owner }}/cloudnativefrontend:${{ github.sha }}
           docker tag frontend-ci $FRONTEND_IMAGE
           docker push $FRONTEND_IMAGE
           echo "Frontend image pushed: $FRONTEND_IMAGE"
 
       - name: Tag and Push Latest
         run: |
-          BACKEND_LATEST=ghcr.io/${{ github.repository_owner }}/cloudnative-backend:latest
-          FRONTEND_LATEST=ghcr.io/${{ github.repository_owner }}/cloudnative-frontend:latest
+          BACKEND_LATEST=ghcr.io/${{ github.repository_owner }}/cloudnativebackend:latest
+          FRONTEND_LATEST=ghcr.io/${{ github.repository_owner }}/cloudnativefrontend:latest
           docker tag backend-ci $BACKEND_LATEST
           docker tag frontend-ci $FRONTEND_LATEST
           docker push $BACKEND_LATEST
