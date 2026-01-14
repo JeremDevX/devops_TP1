@@ -153,7 +153,7 @@ Closes #123
 - Docker and Docker Compose
 - Git
 
-### Installation
+### Installation & Launch
 
 1. **Clone the repository**
 
@@ -173,13 +173,22 @@ Closes #123
 3. **Start the application**
 
    ```bash
-   docker-compose up --build
+   docker compose up --build
    ```
 
-4. **Access the application**
-   - Frontend: http://localhost:8080
-   - Backend API: http://localhost:3000
-   - Database: localhost:5432
+   This command will:
+
+   - Build Docker images for backend and frontend
+   - Start PostgreSQL database
+   - Start backend API server
+   - Start frontend application with Nginx
+   - Run database migrations and seeding
+
+### Access the Application
+
+- **Frontend**: http://localhost:8080
+- **Backend API**: http://localhost:3000
+- **Database**: localhost:5432 (local only)
 
 ### Default Login Credentials
 
