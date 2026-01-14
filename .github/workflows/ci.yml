@@ -169,7 +169,7 @@ jobs:
     name: Push Docker Images to Registry
     runs-on: self-hosted
     needs: docker-test
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    if: github.event_name == 'push'
     steps:
       - uses: actions/checkout@v4
 
