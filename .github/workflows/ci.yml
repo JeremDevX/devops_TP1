@@ -219,6 +219,19 @@ jobs:
           docker push $FRONTEND_LATEST
           echo "Latest tags pushed"
 
+  deploy:
+    name: Deploy Application
+    runs-on: self-hosted
+    needs: docker-push
+    if: github.event_name == 'push'
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Execute Deployment Script
+        run: |
+          chmod +x ./scripts/deploy.sh
+          ./scripts/deploy.sh ${{ github.sha }} ${{ github.repository_owner }}
+
   sonarcloud:
     name: SonarCloud Scan
     runs-on: self-hosted

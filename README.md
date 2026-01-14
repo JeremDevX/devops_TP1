@@ -25,17 +25,58 @@ The CI/CD pipeline runs on a **self-hosted GitHub Actions runner** and includes:
 3. **Tests** - Backend test suite
 4. **Docker Build** - Container image creation
 5. **Docker Test** - Health checks and HTTP validation
-6. **Docker Push** - Registry deployment (main branch only)
-7. **SonarCloud** - Code quality analysis
+6. **Docker Push** - Registry deployment (all branches)
+7. **Deploy** - Automatic application deployment to local runner
+8. **SonarCloud** - Code quality analysis
 
 **Requirements:**
 
 - Self-hosted runner with Docker installed
-- GitHub secrets configured: `DOCKER_USERNAME`, `DOCKER_PASSWORD`, `SONAR_TOKEN`
-- Push to `main` branch triggers full pipeline with Docker registry push
+- GitHub secrets configured: `GHCR_TOKEN` (PAT with write:packages permission), `SONAR_TOKEN`
+- Push triggers full pipeline including automatic deployment
 
 ```
-lint → build → tests → docker-build → docker-test → docker-push → sonarcloud
+lint → build → tests → docker-build → docker-test → docker-push → deploy → sonarcloud
+```
+
+### 🔄 Déploiement local automatisé
+
+Le stage **deploy** redémarre automatiquement l'application après chaque publication d'image Docker :
+
+**Étapes du déploiement :**
+
+1. Arrête les conteneurs en cours (`docker compose down`)
+2. Récupère les nouvelles images depuis GHCR
+3. Retague les images en `:latest`
+4. Redémarre l'application (`docker compose up -d`)
+5. Vérifie que l'application est en bonne santé
+
+**Prérequis pour le déploiement :**
+
+- ✅ Runner local GitHub Actions actif et connecté
+- ✅ Secret `GHCR_TOKEN` configuré (Personal Access Token avec `write:packages`)
+- ✅ Accès au registre GHCR (images publiques ou authenticated)
+- ✅ Variables d'environnement (`.env` présent)
+- ✅ Docker Compose installé sur le runner
+
+**Branches actives :**
+
+- Le déploiement s'exécute automatiquement sur **tous les push** (main, develop, feature/\*)
+- Chaque push déclenche : build → test → lint → Docker push → **déploiement local**
+- Les données PostgreSQL sont **jamais supprimées** (pas de `--volumes`)
+
+**Exécution manuelle :**
+
+Vous pouvez aussi déclencher manuellement le déploiement :
+
+```bash
+./scripts/deploy.sh <commit-sha> <repository-owner>
+```
+
+Exemple :
+
+```bash
+./scripts/deploy.sh abc123def456 jeremdevx
 ```
 
 ## Git Workflow
