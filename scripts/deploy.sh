@@ -2,6 +2,25 @@
 
 set -e
 
+# Load environment variables from .env if it exists
+if [ -f .env ]; then
+  export $(cat .env | grep -v '#' | xargs)
+  echo -e "${BLUE}✅ Environment variables loaded from .env${NC}"
+else
+  # Fallback: use default values for local deployment
+  echo -e "${BLUE}⚠️  No .env file found, using default values${NC}"
+  export POSTGRES_DB=${POSTGRES_DB:-gymdb}
+  export POSTGRES_USER=${POSTGRES_USER:-gymuser}
+  export POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-gympass}
+  export POSTGRES_PORT=${POSTGRES_PORT:-5432}
+  export DATABASE_URL=${DATABASE_URL:-postgresql://gymuser:gympass@postgres:5432/gymdb}
+  export NODE_ENV=${NODE_ENV:-production}
+  export BACKEND_PORT=${BACKEND_PORT:-3000}
+  export FRONTEND_PORT=${FRONTEND_PORT:-8080}
+  export FRONTEND_URL=${FRONTEND_URL:-http://localhost:8080}
+  export VITE_API_BASE_URL=${VITE_API_BASE_URL:-http://localhost:3000/api}
+fi
+
 # Colors for output
 GREEN='\033[0;32m'
 BLUE='\033[0;34m'
