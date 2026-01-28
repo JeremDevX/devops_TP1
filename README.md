@@ -34,6 +34,7 @@ A complete fullstack gym management application built with modern web technologi
 ```
 
 <<<<<<< HEAD
+
 ### 🔄 Déploiement local automatisé
 
 Le stage **deploy** redémarre automatiquement l'application après chaque publication d'image Docker, **uniquement sur les branches de production**.
