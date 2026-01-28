@@ -33,6 +33,84 @@ A complete fullstack gym management application built with modern web technologi
                         └───────────────┘
 ```
 
+
+### 🔄 Déploiement local automatisé
+
+Le stage **deploy** redémarre automatiquement l'application après chaque publication d'image Docker, **uniquement sur les branches de production**.
+
+#### Processus de déploiement
+
+1. **Arrête les conteneurs en cours** : `docker compose down --remove-orphans`
+   - ⚠️ Sans options destructrices (`--volumes`, `--rmi`) → **les données PostgreSQL sont préservées**
+2. **Récupère les nouvelles images depuis GHCR** :
+
+   ```bash
+   docker pull ghcr.io/<username>/cloudnative-backend:<commit-sha>
+   docker pull ghcr.io/<username>/cloudnative-frontend:<commit-sha>
+   ```
+
+3. **Redémarre l'application** : `docker compose up -d --pull always`
+   - Lance tous les services (PostgreSQL, Backend, Frontend)
+   - Lance les migrations Prisma automatiquement
+4. **Vérifie que l'application fonctionne** :
+   - Attend 10 secondes que les services soient prêts
+   - Teste l'endpoint `/health` du backend
+   - Aborte le déploiement en cas d'échec
+
+#### Branches actives et conditions
+
+Le déploiement s'exécute **automatiquement** uniquement lorsque :
+
+- ✅ Un `push` est fait sur la branche **`main`** (production)
+- ✅ Un `push` est fait sur la branche **`develop`** (staging)
+- ✅ Les étapes précédentes (build, test, docker-push) ont réussi
+
+**Important** : Les branches de feature (`feature/*`, `bugfix/*`, etc.) **ne déclenchent pas** le déploiement automatique. Elles exécutent le pipeline complet (lint, build, tests, docker-push) mais **sans redémarrer l'application en production**.
+
+#### Prérequis pour le déploiement
+
+- ✅ **Runner local GitHub Actions** actif et connecté à votre dépôt
+- ✅ **Secret `GHCR_TOKEN`** configuré (PAT avec permission `write:packages`)
+- ✅ **Accès au registre GHCR** (images doivent être publiques ou authentifiées)
+- ✅ **Fichier `.env`** présent dans le répertoire du runner avec les variables :
+  ```env
+  POSTGRES_USER=gymuser
+  POSTGRES_PASSWORD=gympass
+  POSTGRES_DB=gymdb
+  DATABASE_URL=postgresql://gymuser:gympass@postgres:5432/gymdb
+  NODE_ENV=production
+  BACKEND_PORT=3000
+  FRONTEND_PORT=8080
+  FRONTEND_URL=http://localhost:8080
+  VITE_API_BASE_URL=http://localhost:3000/api
+  ```
+- ✅ **Docker & Docker Compose** installés sur le runner
+
+#### Idempotence du déploiement
+
+Le script de déploiement est **idempotent** et peut être exécuté **plusieurs fois de suite sans erreurs** :
+
+- Les conteneurs arrêtés sont relancés proprement
+- Les données PostgreSQL persistent entre les redémarrages
+- Les migrations Prisma sont appliquées une seule fois
+- En cas d'erreur, le script affiche les logs Docker pour le debugging
+
+#### Exécution manuelle du déploiement
+
+Vous pouvez aussi déclencher manuellement le déploiement sur le runner local :
+
+```bash
+./scripts/deploy.sh <commit-sha> <repository-owner>
+```
+
+Exemple :
+
+```bash
+./scripts/deploy.sh abc123def456 jeremdevx
+```
+
+📚 **Documentation complète** : Voir [TP4_DEPLOYMENT.md](TP4_DEPLOYMENT.md) pour tous les détails sur le déploiement automatique.
+
 ## 📋 Git Workflow
 
 ### Branches
@@ -81,14 +159,12 @@ Closes #123
 ### Pull Request Rules
 
 1. **Branch Protection** (main & develop)
-
    - ✅ CI Pipeline must pass (Lint, Build, Tests, SonarCloud)
    - ✅ Minimum 1 code review required
    - ✅ Quality Gate must pass (SonarCloud)
    - ❌ No direct pushes allowed
 
 2. **PR Requirements**
-
    - Descriptive title and description
    - Link related issues (`Closes #123`)
    - Must be merged from feature branch
@@ -153,7 +229,7 @@ Closes #123
 - Docker and Docker Compose
 - Git
 
-### Installation
+### Installation & Launch
 
 1. **Clone the repository**
 
@@ -173,13 +249,21 @@ Closes #123
 3. **Start the application**
 
    ```bash
-   docker-compose up --build
+   docker compose up --build
    ```
 
-4. **Access the application**
-   - Frontend: http://localhost:8080
-   - Backend API: http://localhost:3000
-   - Database: localhost:5432
+   This command will:
+   - Build Docker images for backend and frontend
+   - Start PostgreSQL database
+   - Start backend API server
+   - Start frontend application with Nginx
+   - Run database migrations and seeding
+
+### Access the Application
+
+- **Frontend**: http://localhost:8080
+- **Backend API**: http://localhost:3000
+- **Database**: localhost:5432 (local only)
 
 ### Default Login Credentials
 

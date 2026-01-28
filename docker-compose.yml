@@ -1,0 +1,63 @@
+services:
+  # Base de données PostgreSQL
+  postgres:
+    image: postgres:15-alpine
+    container_name: gym-postgres
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    ports:
+      - "${POSTGRES_PORT}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - gym-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Backend Node.js + Prisma
+  backend:
+    image: ${BACKEND_IMAGE:-backend-ci}
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: gym-backend
+    environment:
+      DATABASE_URL: ${DATABASE_URL}
+      NODE_ENV: ${NODE_ENV}
+      PORT: ${BACKEND_PORT}
+      FRONTEND_URL: ${FRONTEND_URL}
+    ports:
+      - "${BACKEND_PORT}:${BACKEND_PORT}"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - gym-network
+    # Attendre que la DB soit prête puis migrer
+    command: sh -c "npx prisma migrate deploy && npm start"
+
+  # Frontend Vue + Nginx
+  frontend:
+    image: ${FRONTEND_IMAGE:-frontend-ci}
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: gym-frontend
+    ports:
+      - "${FRONTEND_PORT}:80"
+    depends_on:
+      - backend
+    networks:
+      - gym-network
+
+networks:
+  gym-network:
+    driver: bridge
+
+volumes:
+  postgres_data:
