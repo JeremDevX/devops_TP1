@@ -3,42 +3,37 @@
 [![CI Pipeline](https://github.com/JeremDevX/devops_TP1/actions/workflows/ci.yml/badge.svg)](https://github.com/JeremDevX/devops_TP1/actions/workflows/ci.yml)
 [![Quality Gate](https://sonarcloud.io/api/project_badges/measure?project=cloud-native-gym&metric=alert_status&token=sqb_6f6aa51c89f6e92e20dd52cf00f7fce9a63fe006)](https://sonarcloud.io/dashboard?id=cloud-native-gym)
 
-A complete fullstack gym management application built with modern web technologies, fully containerized with Docker and integrated into a complete CI/CD pipeline.
+A complete fullstack gym management application built with modern web technologies.
 
-## 🔄 CI/CD Pipeline & Docker
-
-### Docker Images
-
-Docker images are automatically built, tested, and pushed to GitHub Container Registry (GHCR):
-
-- **Backend**: `ghcr.io/<username>/cloudnative-backend:latest`
-- **Frontend**: `ghcr.io/<username>/cloudnative-frontend:latest`
-
-Each deployment includes both `:latest` and `:commit-sha` tags.
-
-### Pipeline Execution
-
-The CI/CD pipeline runs on a **self-hosted GitHub Actions runner** and includes:
-
-1. **Lint** - Code style validation (ESLint)
-2. **Build** - Compilation of frontend and backend
-3. **Tests** - Backend test suite
-4. **Docker Build** - Container image creation
-5. **Docker Test** - Health checks and HTTP validation
-6. **Docker Push** - Registry deployment (all branches)
-7. **Deploy** - Automatic application deployment to local runner
-8. **SonarCloud** - Code quality analysis
-
-**Requirements:**
-
-- Self-hosted runner with Docker installed
-- GitHub secrets configured: `GHCR_TOKEN` (PAT with write:packages permission), `SONAR_TOKEN`
-- Push triggers full pipeline including automatic deployment
+## 🔄 CI/CD Pipeline
 
 ```
-lint → build → tests → docker-build → docker-test → docker-push → deploy → sonarcloud
+┌─────────────────────────────────────────────────────────────────┐
+│                     GitHub Actions (self-hosted)                │
+└─────────────────────────────────────────────────────────────────┘
+                                │
+                    ┌───────────┴───────────┐
+                    ▼                       ▼
+              ┌──────────┐           ┌──────────┐
+              │  LINT   │           │  BUILD   │
+              │Front+Back│◄──────────┤Front+Back│
+              └──────────┘           └──────────┘
+                    │                       │
+                    └───────────┬───────────┘
+                                ▼
+                          ┌──────────┐
+                          │  TESTS   │
+                          │Backend   │
+                          └──────────┘
+                                │
+                                ▼
+                        ┌───────────────┐
+                        │  SONARCLOUD   │
+                        │Quality Gate   │
+                        └───────────────┘
 ```
 
+<<<<<<< HEAD
 ### 🔄 Déploiement local automatisé
 
 Le stage **deploy** redémarre automatiquement l'application après chaque publication d'image Docker, **uniquement sur les branches de production**.
@@ -116,7 +111,7 @@ Exemple :
 
 📚 **Documentation complète** : Voir [TP4_DEPLOYMENT.md](TP4_DEPLOYMENT.md) pour tous les détails sur le déploiement automatique.
 
-## Git Workflow
+## 📋 Git Workflow
 
 ### Branches
 
@@ -251,7 +246,7 @@ Closes #123
 
    Edit `.env` file if needed (default values should work for development).
 
-3. **Start the application with Docker Compose**
+3. **Start the application**
 
    ```bash
    docker compose up --build
