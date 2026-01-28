@@ -47,8 +47,8 @@ Le stage **deploy** redémarre automatiquement l'application après chaque publi
 
 1. **Arrête les conteneurs en cours** : `docker compose down --remove-orphans`
    - ⚠️ Sans options destructrices (`--volumes`, `--rmi`) → **les données PostgreSQL sont préservées**
-   
 2. **Récupère les nouvelles images depuis GHCR** :
+
    ```bash
    docker pull ghcr.io/<username>/cloudnative-backend:<commit-sha>
    docker pull ghcr.io/<username>/cloudnative-frontend:<commit-sha>
@@ -57,7 +57,6 @@ Le stage **deploy** redémarre automatiquement l'application après chaque publi
 3. **Redémarre l'application** : `docker compose up -d --pull always`
    - Lance tous les services (PostgreSQL, Backend, Frontend)
    - Lance les migrations Prisma automatiquement
-   
 4. **Vérifie que l'application fonctionne** :
    - Attend 10 secondes que les services soient prêts
    - Teste l'endpoint `/health` du backend
@@ -165,14 +164,12 @@ Closes #123
 ### Pull Request Rules
 
 1. **Branch Protection** (main & develop)
-
    - ✅ CI Pipeline must pass (Lint, Build, Tests, SonarCloud)
    - ✅ Minimum 1 code review required
    - ✅ Quality Gate must pass (SonarCloud)
    - ❌ No direct pushes allowed
 
 2. **PR Requirements**
-
    - Descriptive title and description
    - Link related issues (`Closes #123`)
    - Must be merged from feature branch
@@ -261,7 +258,6 @@ Closes #123
    ```
 
    This command will:
-
    - Build Docker images for backend and frontend
    - Start PostgreSQL database
    - Start backend API server
