@@ -33,7 +33,6 @@ A complete fullstack gym management application built with modern web technologi
                         └───────────────┘
 ```
 
-<<<<<<< HEAD
 
 ### 🔄 Déploiement local automatisé
 
