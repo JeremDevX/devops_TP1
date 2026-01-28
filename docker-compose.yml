@@ -21,6 +21,7 @@ services:
 
   # Backend Node.js + Prisma
   backend:
+    image: ${BACKEND_IMAGE:-backend-ci}
     build:
       context: ./backend
       dockerfile: Dockerfile
@@ -42,6 +43,7 @@ services:
 
   # Frontend Vue + Nginx
   frontend:
+    image: ${FRONTEND_IMAGE:-frontend-ci}
     build:
       context: ./frontend
       dockerfile: Dockerfile

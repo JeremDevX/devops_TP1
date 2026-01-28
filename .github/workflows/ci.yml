@@ -223,7 +223,7 @@ jobs:
     name: Deploy Application
     runs-on: self-hosted
     needs: docker-push
-    if: github.event_name == 'push'
+    if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop')
     steps:
       - uses: actions/checkout@v4
 
@@ -231,6 +231,16 @@ jobs:
         run: |
           chmod +x ./scripts/deploy.sh
           ./scripts/deploy.sh ${{ github.sha }} ${{ github.repository_owner }}
+        env:
+          POSTGRES_USER: ${{ secrets.POSTGRES_USER || 'gymuser' }}
+          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD || 'gympass' }}
+          POSTGRES_DB: ${{ secrets.POSTGRES_DB || 'gymdb' }}
+          DATABASE_URL: ${{ secrets.DATABASE_URL || 'postgresql://gymuser:gympass@postgres:5432/gymdb' }}
+          NODE_ENV: production
+          BACKEND_PORT: 3000
+          FRONTEND_PORT: 8080
+          FRONTEND_URL: http://localhost:8080
+          VITE_API_BASE_URL: http://localhost:3000/api
 
   sonarcloud:
     name: SonarCloud Scan
