@@ -36,7 +36,8 @@ app.get('/health', (req, res) => {
 });
 
 // Error handling middleware
-app.use((err, req, res, next) => {
+app.use((err, req, res) => {
+  // eslint-disable-next-line no-console
   console.error(err.stack);
   res.status(500).json({
     error: 'Something went wrong!',
@@ -50,6 +51,8 @@ app.use('*', (req, res) => {
 });
 
 app.listen(PORT, () => {
+  // eslint-disable-next-line no-console
   console.log(`Server running on port ${PORT}`);
+  // eslint-disable-next-line no-console
   console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
 });
